@@ -82,7 +82,6 @@ protected:
 
 
     boost::shared_ptr<PFJetIDSelectionFunctor> jetSel_;
-    boost::shared_ptr<PVSelector>              pvSel_;
 
 
 private:
@@ -93,25 +92,19 @@ private:
     bool debug;
     bool isMc;
 
-
+    //Triggers
     bool trigger_cut;
     bool dump_trigger;
     std::vector<std::string> trigger_path_ee;
     std::vector<std::string> trigger_path_em;
     std::vector<std::string> trigger_path_mm;
 
-    // bool pv_cut;
-    // bool hbhe_cut;
-    // bool metfilters;
-    // std::string hbhe_cut_value;
-    // bool hbheiso_cut;
-    // bool cscHalo_cut;
-    // bool eesc_cut;
-    // bool ecalTP_cut;
-    // bool goodVtx_cut;
-    // bool badMuon_cut;
-    // bool badChargedHadron_cut;
+    //PV
+    bool pv_cut;
+    boost::shared_ptr<PVSelector>              pvSel_;
 
+    //MET Filter
+    bool   metfilters;
 
     // bool jet_cuts;
     // bool jet_minpt;
@@ -163,6 +156,9 @@ private:
 
     // //Tokens
     edm::EDGetTokenT<edm::TriggerResults>            triggersToken;
+    edm::EDGetTokenT<reco::VertexCollection>         PVToken;
+    edm::EDGetTokenT<edm::TriggerResults>            METfilterToken;
+    edm::EDGetTokenT<bool>                           METfilterToken_extra;
     // edm::EDGetTokenT<pat::JetCollection>             jetsToken;
     // edm::EDGetTokenT<pat::MuonCollection>            muonsToken;
     // edm::EDGetTokenT<pat::ElectronCollection>        electronsToken;
@@ -174,8 +170,8 @@ private:
 
     // //Separate methods for each selction for organization
     bool TriggerSelection  (edm::Event const & event);
-    // bool PVSelection       (edm::Event const & event);
-    // bool METfilter         (edm::Event const & event);
+    bool PVSelection       (edm::Event const & event);
+    bool METfilter         (edm::Event const & event);
     // void MuonSelection     (edm::Event const & event);
     // void ElectronSelection (edm::Event const & event);
     // bool LeptonsSelection  (edm::Event const & event, pat::strbitset & ret);
@@ -211,21 +207,31 @@ void DileptonEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     // const edm::ParameterSet& PFJetIFconfig = selectorConfig.getParameterSet("pfJetIDSelector") ;
     // jetSel_ = boost::shared_ptr<PFJetIDSelectionFunctor>( new PFJetIDSelectionFunctor(PFJetIFconfig) );
 
-    // //PV
-    // const edm::ParameterSet& PVconfig = selectorConfig.getParameterSet("pvSelector") ;
-    // PVToken                           = iC.consumes<reco::VertexCollection>(PVconfig.getParameter<edm::InputTag>("pvSrc"));
-    // pv_cut                            = selectorConfig.getParameter<bool>("pv_cut");
-    // pvSel_                            = boost::shared_ptr<PVSelector>( new PVSelector(PVconfig) );
+    debug               = selectorConfig.getParameter<bool>         ("debug");
+    isMc                = selectorConfig.getParameter<bool>("isMc");
+    bFirstEntry = true; //in case anything needs a first entry bool.
 
-
-    debug                    = selectorConfig.getParameter<bool>         ("debug");
+    //Triggers
+    triggersToken = iC.consumes<edm::TriggerResults>(selectorConfig.getParameter<edm::InputTag>("HLTcollection"));
     trigger_cut              = selectorConfig.getParameter<bool>         ("trigger_cut");
     dump_trigger             = selectorConfig.getParameter<bool>         ("dump_trigger");
     trigger_path_ee          = selectorConfig.getParameter<std::vector<std::string> >  ("trigger_path_ee");
     trigger_path_em          = selectorConfig.getParameter<std::vector<std::string> >  ("trigger_path_em");
     trigger_path_mm          = selectorConfig.getParameter<std::vector<std::string> >  ("trigger_path_mm");
 
-    // pv_cut                   = selectorConfig.getParameter<bool>         ("pv_cut");
+
+    //PV
+    const edm::ParameterSet& PVconfig = selectorConfig.getParameterSet("pvSelector") ;
+    PVToken                  = iC.consumes<reco::VertexCollection>(PVconfig.getParameter<edm::InputTag>("pvSrc"));
+    pv_cut                   = selectorConfig.getParameter<bool>         ("pv_cut");
+    pvSel_ = boost::shared_ptr<PVSelector>( new PVSelector(PVconfig) );
+
+    //MET filter
+    METfilterToken       = iC.consumes<edm::TriggerResults>(selectorConfig.getParameter<edm::InputTag>("flag_tag"));
+    METfilterToken_extra = iC.consumes<bool>(selectorConfig.getParameter<edm::InputTag>("METfilter_extra"));
+    metfilters           = selectorConfig.getParameter<bool>("metfilters");
+
+
     // hbhe_cut                 = selectorConfig.getParameter<bool>         ("hbhe_cut");
     // metfilters                   = selectorConfig.getParameter<bool>         ("metfilters");
     // hbhe_cut_value           = selectorConfig.getParameter<std::string>  ("hbhe_cut_value");
@@ -275,14 +281,10 @@ void DileptonEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     // UseElMVA                 = selectorConfig.getParameter<bool>         ("UseElMVA");
 
 
-    bFirstEntry = true;
-
     push_back("No selection");
-    set("No selection");
-
     push_back("Trigger");
-    // push_back("Primary vertex");
-    // push_back("MET filters");
+    push_back("Primary Vertex");
+    push_back("MET filters");
     // push_back("Min muon");
     // push_back("Max muon");
     // push_back("Min electron");
@@ -297,12 +299,10 @@ void DileptonEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     push_back("All cuts");          // sanity check
 
 
-
-    // TOP PAG sync selection v3
-
+    set("No selection");
     set("Trigger", trigger_cut);
-    // set("Primary vertex", pv_cut);
-    // set("MET filters", metfilters);
+    set("Primary Vertex", pv_cut);
+    set("MET filters", metfilters);
 
     // if (muon_cuts){
     //     set("Min muon", min_muon"]);
@@ -343,6 +343,20 @@ void DileptonEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
 
     set("All cuts", true);
 
+
+
+    //Record cut flow information - will be saved under folder named after the selector name.
+    SetHistogram( "Trigger", 2, 0,2);
+    SetHistogram("Primary Vertex", 2, 0,2);
+    SetHistogram("MET filters", 2, 0,2);
+    // SetHistogram("Lepton Selection", 2, 0,2); // keeping it simple for now
+    // if(jet_cuts){
+    //     SetHistogram("Jet Selection", 2, 0,2); // keeping it simple for now
+    // }
+    // SetHistogram("MET", 2, 0,2);
+    // SetHistogram("All cuts", 2, 0,2);
+
+
 } // initialize()
 
 
@@ -379,65 +393,13 @@ bool DileptonEventSelector::operator()( edm::Event const & event, pat::strbitset
     passCut(ret, "Trigger");
     FillHist("Trigger", 1);
 
+    if( ! PVSelection(event) ) break;
+    passCut(ret, "Primary Vertex");
+    FillHist("Primary Vertex", 1);
 
-/*    //
-    //_____ Primary vertex cuts __________________________________
-    //
-    if ( considerCut("Primary vertex") ) {
-
-      if ( (*pvSel_)(event) ){
-        passCut(ret, "Primary vertex"); // PV cuts total
-      }
-
-    } // end of PV cuts
-*/
-
-
-/*
-
-    //_________MET Filters available in miniAOD_________
-
-    //       if ( considerCut("CSC Tight Halo filter") || considerCut("EE Bad SC filter") || considerCut("HBHE noise and scraping filter") || considerCut("HBHE Iso noise filter") || considerCut("Ecal Dead TP") || considerCut("Good Vtx")) {
-    if (considerCut("MET filters")) {
-      edm::Handle<edm::TriggerResults > PatTriggerResults;
-      event.getByLabel( flag_tag, PatTriggerResults );
-      const edm::TriggerNames patTrigNames = event.triggerNames(*PatTriggerResults);
-
-      bool goodvertpass = false;
-      bool globaltighthalopass = false;
-      bool hbhenoisepass = false;
-      bool hbhenoiseisopass = false;
-      bool ecaldeadcellpass = false;
-      bool badpfmuonpass = false;
-      bool badchargedcandpass = false;
-      bool eebadscpass = false;
-      bool eebadcalibpass = false;
-      // if block of commented code in this section is restored, need to remove these 4 lines
-      // passCut(ret, "CSC Tight Halo filter");
-      // passCut(ret, "EE Bad SC filter");
-      // passCut(ret,"Ecal Dead TP");
-      // passCut(ret,"Good Vtx");
-
-      // Moriond 2018
-      for (unsigned int i=0; i<PatTriggerResults->size(); i++){
-        if (patTrigNames.triggerName(i) == "Flag_goodVertices") goodvertpass = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i)));  //primary vertext filter
-        if (patTrigNames.triggerName(i) == "Flag_globalSuperTightHalo2016Filter") globaltighthalopass = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i))); //beam halo filter
-        if (patTrigNames.triggerName(i) == "Flag_HBHENoiseFilter") hbhenoisepass = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i))); //HBHE noise filter
-        if (patTrigNames.triggerName(i) == "Flag_HBHENoiseIsoFilter") hbhenoiseisopass = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i))); //HBHEiso noise filter
-        if (patTrigNames.triggerName(i) == "Flag_EcalDeadCellTriggerPrimitiveFilter") ecaldeadcellpass = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i))); //ECAL TP filter
-        if (patTrigNames.triggerName(i) == "Flag_BadPFMuonFilter") badpfmuonpass = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i))); //Bad PF muon filter
-        if (patTrigNames.triggerName(i) == "Flag_BadChargedCandidateFilter") badchargedcandpass = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i))); //bad charged hadron cand filter
-        if (patTrigNames.triggerName(i) == "Flag_eeBadScFilter") eebadscpass = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i))); //ee badSC noise filter
-        if (patTrigNames.triggerName(i) == "Flag_ecalBadCalibFilter") eebadcalibpass = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i))); //ECAL bad calibration filter
-      }
-
-      if(hbhenoisepass && hbhenoiseisopass && globaltighthalopass && ecaldeadcellpass && (isMc || eebadscpass) && goodvertpass && badpfmuonpass && badchargedcandpass && eebadcalibpass){
-        passCut(ret, "MET filters");
-      }
-      else break;
-    }
-
-*/
+    if( ! METfilter(event) ) break;
+    passCut(ret, "MET filters");
+    FillHist("MET filters", 1);
 
 
 /*
@@ -846,6 +808,7 @@ bool DileptonEventSelector::TriggerSelection(edm::Event const & event)
     //
     if ( considerCut("Trigger") ) {
 
+      if(debug)std::cout << "\t" <<"TriggerSelection:"<< std::endl;
 
       event.getByToken( triggersToken, TriggerHandle );
       const edm::TriggerNames trigNames = event.triggerNames(*TriggerHandle);
@@ -971,6 +934,116 @@ bool DileptonEventSelector::TriggerSelection(edm::Event const & event)
     return passTrig;
 }
 
+bool DileptonEventSelector::PVSelection(edm::Event const & event)
+{
+
+    bool pass = false;
+
+    //
+    //_____ Primary Vertex cuts __________________________________
+    //
+    vSelPVs.clear();
+    if ( considerCut("Primary Vertex") ) {
+
+        if(debug)std::cout << "\t" <<"PVSelection:"<< std::endl;
+
+        if ( (*pvSel_)(event) ){
+            pass = true;
+            vSelPVs = pvSel_->GetSelectedPvs(); //reference: https://github.com/cms-sw/cmssw/blob/CMSSW_9_4_X/PhysicsTools/SelectorUtils/interface/PVSelector.h
+            if(debug)std::cout << "\t" << "\t" <<"num of selected PV = "<< pvSel_->GetNpv()<< std::endl;
+        }
+        else{
+            if(debug)std::cout << "\t" << "\t" <<"No selected PV."<< std::endl;
+        }
+
+    }
+    else{
+
+         if(debug)std::cout << "\t" <<"IGNORING PVSelection"<< std::endl;
+
+     pass = true;
+
+    }
+
+    return pass;
+}
+
+bool DileptonEventSelector::METfilter(edm::Event const & event)
+{
+
+    bool pass = false;
+
+    //
+    //_____ MET Filters __________________________________
+    //
+    //
+    if (considerCut("MET filters")) {
+
+      if(debug)std::cout << "\t" <<"METFilterSelection:"<< std::endl;
+
+      edm::Handle<edm::TriggerResults > PatTriggerResults;
+      event.getByToken( METfilterToken, PatTriggerResults );
+      const edm::TriggerNames patTrigNames = event.triggerNames(*PatTriggerResults);
+
+      bool goodvertpass = false;
+      bool globaltighthalopass = false;
+      bool hbhenoisepass = false;
+      bool hbhenoiseisopass = false;
+      bool ecaldeadcellpass = false;
+      bool badpfmuonpass = false;
+      bool badchargedcandpass = false;
+      bool eebadscpass = false;
+      bool eebadcalibpass = false;
+
+
+      for (unsigned int i=0; i<PatTriggerResults->size(); i++){
+        if (patTrigNames.triggerName(i) == "Flag_goodVertices") goodvertpass = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i)));
+        if (patTrigNames.triggerName(i) == "Flag_globalSuperTightHalo2016Filter") globaltighthalopass = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i)));
+        if (patTrigNames.triggerName(i) == "Flag_HBHENoiseFilter") hbhenoisepass = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i)));
+        if (patTrigNames.triggerName(i) == "Flag_HBHENoiseIsoFilter") hbhenoiseisopass = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i)));
+        if (patTrigNames.triggerName(i) == "Flag_EcalDeadCellTriggerPrimitiveFilter") ecaldeadcellpass = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i)));
+        if (patTrigNames.triggerName(i) == "Flag_BadPFMuonFilter") badpfmuonpass = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i)));
+        if (patTrigNames.triggerName(i) == "Flag_BadChargedCandidateFilter") badchargedcandpass = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i)));
+        if (patTrigNames.triggerName(i) == "Flag_eeBadScFilter") eebadscpass = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i)));
+        if (patTrigNames.triggerName(i) == "Flag_ecalBadCalibFilter") eebadcalibpass = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i)));
+      }
+
+      // Rerun ecalBadCalibReducedMINIAODFilter if possible
+      edm::Handle<bool> passecalBadCalibFilterUpdate;
+      if(event.getByToken( METfilterToken_extra , passecalBadCalibFilterUpdate)){
+          eebadcalibpass = *passecalBadCalibFilterUpdate;
+      }
+
+      if( hbhenoisepass &&
+          hbhenoiseisopass &&
+          globaltighthalopass &&
+          ecaldeadcellpass &&
+          (isMc || eebadscpass) &&
+          goodvertpass &&
+          badpfmuonpass &&
+          badchargedcandpass &&
+          eebadcalibpass)
+      {
+        if(debug)std::cout << "\t\t" <<"Passes MET Filter selection."<< std::endl;
+        pass=true;
+      }
+      else{
+
+        if(debug)std::cout << "\t" <<"Fails MET Filter selection."<< std::endl;
+
+      }
+
+    }
+    else{
+
+      if(debug)std::cout << "\t" <<"IGNORING MET Filter selection"<< std::endl;
+
+      pass = true;
+
+    }
+
+    return pass;
+}
 
 void DileptonEventSelector::AnalyzeEvent( edm::EventBase const & event,
                                          LjmetEventContent & ec ){

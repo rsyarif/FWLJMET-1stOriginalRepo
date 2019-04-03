@@ -36,7 +36,7 @@ else:
         OUTFILENAME = 'DoubleEG_Run2017F'
         POSTFIX = 'DATA'
 # TFileService
-process.TFileService = cms.Service("TFileService", fileName = cms.string(OUTFILENAME+'_FWLJMET_'+POSTFIX+'.root'))
+process.TFileService = cms.Service("TFileService", fileName = cms.string(OUTFILENAME+'_FWLJMET_dilep'+POSTFIX+'.root'))
 
 
 # Output Module Configuration (expects a path 'p')
@@ -112,7 +112,7 @@ DataResJetParAK8         = relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17N
 
 DileptonSelector_cfg = cms.PSet(
 
-            debug  = cms.bool(False),
+            debug  = cms.bool(True),
 
             isMc  = cms.bool(isMC),
 
@@ -120,38 +120,40 @@ DileptonSelector_cfg = cms.PSet(
             trigger_cut  = cms.bool(True),
             HLTcollection= cms.InputTag("TriggerResults","","HLT"),
             dump_trigger = cms.bool(False),
-            mctrigger_path_el = cms.vstring(
-                        'HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v',  #exists in 2017
-                        'HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v', #exists in 2017
+            trigger_path_ee          = cms.vstring(
+                'HLT_DoubleEle33_CaloIdL_MW_v',
+                'HLT_DoubleEle27_CaloIdL_MW_v',
+                'HLT_DoubleEle25_CaloIdL_MW_v',
+                'HLT_Ele27_Ele37_CaloIdL_MW_v',
 
-                        'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v',   #exists in 2017
-                        'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ', #exists in 2017
-                        'HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v', #exists in 2017
-                        'HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v',  #exists in 2017
+                'HLT_DoubleEle24_eta2p1_WPTight_Gsf_v',
+                'HLT_DoubleEle8_CaloIdM_TrackIdM_Mass8_DZ_PFHT350_v',
+                'HLT_DoubleEle8_CaloIdM_TrackIdM_Mass8_PFHT350_v',
+                'HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v',
+                'HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v',
 
-                        #for trig efficiency
-                        'HLT_Ele27_WPTight_Gsf_v',
-                        'HLT_Ele35_WPTight_Gsf_v',
-                        ),
-            mctrigger_path_mu = cms.vstring(
-                        'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v',   #exists in 2017
-                        'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ', #exists in 2017
-                        'HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v', #exists in 2017
-                        'HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v',  #exists in 2017
+                ),
 
-                        'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v',    #exists in 2017  (PreScaled!)
-                        'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v',  #exists in 2017 (PreScaled!)
-                        'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v',
-                        'HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v',
-                        'HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v',
+            trigger_path_em          = cms.vstring(
+                'HLT_Mu37_Ele27_CaloIdL_MW_v',
+                'HLT_Mu27_Ele37_CaloIdL_MW_v',
 
-                        #for trig efficiency
-                        'HLT_IsoMu24_v',
-                        'HLT_IsoTkMu24_v',
-                        'HLT_IsoMu27_v',
-                        ),
-            trigger_path_el = cms.vstring(''), #currently set to be the same as mc in the src code
-            trigger_path_mu = cms.vstring(''), #currently set to be the same as mc in the src code
+                'HLT_Mu8_Ele8_CaloIdM_TrackIdM_Mass8_PFHT350_DZ_v',
+                'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v',
+                'HLT_Mu8_Ele8_CaloIdM_TrackIdM_Mass8_PFHT350_v',
+                'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v',
+                'HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v',
+                'HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v',
+                'HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v',
+                'HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v',
+                ),
+
+            trigger_path_mm          = cms.vstring(
+                'HLT_Mu37_TkMu27_v',
+                'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v',
+                'HLT_DoubleMu8_Mass8_PFHT350_v',
+                'HLT_DoubleMu4_Mass8_DZ_PFHT350_v',
+                ),
 
             # PV cuts
             pv_cut     = cms.bool(True),
@@ -169,110 +171,110 @@ DileptonSelector_cfg = cms.PSet(
             METfilter_extra = cms.InputTag("ecalBadCalibReducedMINIAODFilter"),
 
             # MET cuts
-            met_cuts       = cms.bool(True),
-            min_met        = cms.double(20.0),
-            max_met        = cms.double(99999999999.0),
-            met_collection = cms.InputTag('slimmedMETs'),
-            rhoJetsInputTag = cms.InputTag("fixedGridRhoFastjetAll"), #for jetmetcorrection
+            # met_cuts       = cms.bool(True),
+            # min_met        = cms.double(20.0),
+            # max_met        = cms.double(99999999999.0),
+            # met_collection = cms.InputTag('slimmedMETs'),
+            # rhoJetsInputTag = cms.InputTag("fixedGridRhoFastjetAll"), #for jetmetcorrection
 
-            PFparticlesCollection  = cms.InputTag("packedPFCandidates"),
-            rhoJetsNCInputTag            = cms.InputTag("fixedGridRhoFastjetCentralNeutral",""),
+            # PFparticlesCollection  = cms.InputTag("packedPFCandidates"),
+            # rhoJetsNCInputTag            = cms.InputTag("fixedGridRhoFastjetCentralNeutral",""),
 
-            #Muon
-            muon_cuts                = cms.bool(True),
-            muonsCollection          = cms.InputTag("slimmedMuons"),
-            min_muon                 = cms.int32(0), #not implemented in src code
-            muon_minpt               = cms.double(20.0),
-            muon_maxeta              = cms.double(2.4),
-            muon_useMiniIso          = cms.bool(True),
-            loose_muon_minpt         = cms.double(20.0),
-            loose_muon_maxeta        = cms.double(2.4),
-            muon_dxy                 = cms.double(0.2),
-            muon_dz                  = cms.double(0.5),
-            loose_muon_dxy           = cms.double(999999.),
-            loose_muon_dz            = cms.double(999999.),
+            # #Muon
+            # muon_cuts                = cms.bool(True),
+            # muonsCollection          = cms.InputTag("slimmedMuons"),
+            # min_muon                 = cms.int32(0), #not implemented in src code
+            # muon_minpt               = cms.double(20.0),
+            # muon_maxeta              = cms.double(2.4),
+            # muon_useMiniIso          = cms.bool(True),
+            # loose_muon_minpt         = cms.double(20.0),
+            # loose_muon_maxeta        = cms.double(2.4),
+            # muon_dxy                 = cms.double(0.2),
+            # muon_dz                  = cms.double(0.5),
+            # loose_muon_dxy           = cms.double(999999.),
+            # loose_muon_dz            = cms.double(999999.),
 
-            # Muon -- Unused parameters but could be use again
-            muon_relIso              = cms.double(0.2),
-            loose_muon_relIso        = cms.double(0.4),
+            # # Muon -- Unused parameters but could be use again
+            # muon_relIso              = cms.double(0.2),
+            # loose_muon_relIso        = cms.double(0.4),
 
-            # Electon
-            electron_cuts            = cms.bool(True),
-            electronsCollection      = cms.InputTag("slimmedElectrons"), #slimmedElectrons::LJMET" #for Egamma ID V2
-            min_electron             = cms.int32(0), #not implemented in src code
-            electron_minpt           = cms.double(20.0),
-            electron_maxeta          = cms.double(2.4),
-            electron_useMiniIso      = cms.bool(True),
-            electron_miniIso         = cms.double(0.1),
-            loose_electron_miniIso   = cms.double(0.4),
-            loose_electron_minpt     = cms.double(20.0),
-            loose_electron_maxeta    = cms.double(2.4),
-            UseElMVA                 = cms.bool(True),
-            UseElIDV1                = cms.bool(True), #False means using ElIDV2
+            # # Electon
+            # electron_cuts            = cms.bool(True),
+            # electronsCollection      = cms.InputTag("slimmedElectrons"), #slimmedElectrons::LJMET" #for Egamma ID V2
+            # min_electron             = cms.int32(0), #not implemented in src code
+            # electron_minpt           = cms.double(20.0),
+            # electron_maxeta          = cms.double(2.4),
+            # electron_useMiniIso      = cms.bool(True),
+            # electron_miniIso         = cms.double(0.1),
+            # loose_electron_miniIso   = cms.double(0.4),
+            # loose_electron_minpt     = cms.double(20.0),
+            # loose_electron_maxeta    = cms.double(2.4),
+            # UseElMVA                 = cms.bool(True),
+            # UseElIDV1                = cms.bool(True), #False means using ElIDV2
 
-            #nLeptons
-            minLooseLeptons_cut = cms.bool(True), #inclusive Loose.
-            minLooseLeptons     = cms.int32(3),
-            maxLooseLeptons_cut = cms.bool(False),
-            maxLooseLeptons     = cms.int32(9999),
-            minLeptons_cut      = cms.bool(False),
-            minLeptons          = cms.int32(3),
-            maxLeptons_cut      = cms.bool(False),
-            maxLeptons          = cms.int32(9999),
+            # #nLeptons
+            # minLooseLeptons_cut = cms.bool(True), #inclusive Loose.
+            # minLooseLeptons     = cms.int32(3),
+            # maxLooseLeptons_cut = cms.bool(False),
+            # maxLooseLeptons     = cms.int32(9999),
+            # minLeptons_cut      = cms.bool(False),
+            # minLeptons          = cms.int32(3),
+            # maxLeptons_cut      = cms.bool(False),
+            # maxLeptons          = cms.int32(9999),
 
-            # Jets
-            jet_collection           = cms.InputTag('slimmedJets'),
-            AK8jet_collection        = cms.InputTag('slimmedJetsAK8'),
-            JECup                    = cms.bool(JECup),
-            JECdown                  = cms.bool(JECdown),
-            JERup                    = cms.bool(JERup),
-            JERdown                  = cms.bool(JERdown),
-            doLepJetCleaning         = cms.bool(True),
-            CleanLooseLeptons        = cms.bool(True),
-            LepJetDR                 = cms.double(0.4),
-            LepJetDRAK8              = cms.double(0.8),
-            jet_cuts                 = cms.bool(True),
-            jet_minpt                = cms.double(30.0),
-            jet_maxeta               = cms.double(2.5),
-            jet_minpt_AK8            = cms.double(200.0),
-            jet_maxeta_AK8           = cms.double(2.4),
-            min_jet                  = cms.int32(1),
-            max_jet                  = cms.int32(9999),
-            leading_jet_pt           = cms.double(30.0),
-            # Jet corrections are read from txt files
-            doNewJEC                 = cms.bool(doNewJEC),
-            doAllJetSyst             = cms.bool(doAllJetSyst),
-            JEC_txtfile              = cms.string(JEC_txtfile),
-            JERSF_txtfile            = cms.string(JERSF_txtfile),
-            JER_txtfile              = cms.string(JER_txtfile),
-            JERAK8_txtfile           = cms.string(JERAK8_txtfile),
-            MCL1JetPar               = cms.string(MCL1JetPar),
-            MCL2JetPar               = cms.string(MCL2JetPar),
-            MCL3JetPar               = cms.string(MCL3JetPar),
-            MCL1JetParAK8            = cms.string(MCL1JetParAK8),
-            MCL2JetParAK8            = cms.string(MCL2JetParAK8),
-            MCL3JetParAK8            = cms.string(MCL3JetParAK8),
-            DataL1JetPar             = cms.string(DataL1JetPar),
-            DataL2JetPar             = cms.string(DataL2JetPar),
-            DataL3JetPar             = cms.string(DataL3JetPar),
-            DataResJetPar            = cms.string(DataResJetPar),
-            DataL1JetParAK8          = cms.string(DataL1JetParAK8),
-            DataL2JetParAK8          = cms.string(DataL2JetParAK8),
-            DataL3JetParAK8          = cms.string(DataL3JetParAK8),
-            DataResJetParAK8         = cms.string(DataResJetParAK8),
+            # # Jets
+            # jet_collection           = cms.InputTag('slimmedJets'),
+            # AK8jet_collection        = cms.InputTag('slimmedJetsAK8'),
+            # JECup                    = cms.bool(JECup),
+            # JECdown                  = cms.bool(JECdown),
+            # JERup                    = cms.bool(JERup),
+            # JERdown                  = cms.bool(JERdown),
+            # doLepJetCleaning         = cms.bool(True),
+            # CleanLooseLeptons        = cms.bool(True),
+            # LepJetDR                 = cms.double(0.4),
+            # LepJetDRAK8              = cms.double(0.8),
+            # jet_cuts                 = cms.bool(True),
+            # jet_minpt                = cms.double(30.0),
+            # jet_maxeta               = cms.double(2.5),
+            # jet_minpt_AK8            = cms.double(200.0),
+            # jet_maxeta_AK8           = cms.double(2.4),
+            # min_jet                  = cms.int32(1),
+            # max_jet                  = cms.int32(9999),
+            # leading_jet_pt           = cms.double(30.0),
+            # # Jet corrections are read from txt files
+            # doNewJEC                 = cms.bool(doNewJEC),
+            # doAllJetSyst             = cms.bool(doAllJetSyst),
+            # JEC_txtfile              = cms.string(JEC_txtfile),
+            # JERSF_txtfile            = cms.string(JERSF_txtfile),
+            # JER_txtfile              = cms.string(JER_txtfile),
+            # JERAK8_txtfile           = cms.string(JERAK8_txtfile),
+            # MCL1JetPar               = cms.string(MCL1JetPar),
+            # MCL2JetPar               = cms.string(MCL2JetPar),
+            # MCL3JetPar               = cms.string(MCL3JetPar),
+            # MCL1JetParAK8            = cms.string(MCL1JetParAK8),
+            # MCL2JetParAK8            = cms.string(MCL2JetParAK8),
+            # MCL3JetParAK8            = cms.string(MCL3JetParAK8),
+            # DataL1JetPar             = cms.string(DataL1JetPar),
+            # DataL2JetPar             = cms.string(DataL2JetPar),
+            # DataL3JetPar             = cms.string(DataL3JetPar),
+            # DataResJetPar            = cms.string(DataResJetPar),
+            # DataL1JetParAK8          = cms.string(DataL1JetParAK8),
+            # DataL2JetParAK8          = cms.string(DataL2JetParAK8),
+            # DataL3JetParAK8          = cms.string(DataL3JetParAK8),
+            # DataResJetParAK8         = cms.string(DataResJetParAK8),
 
 
-            #Btag
-            btag_cuts                = cms.bool(False), #not implemented
-            btagOP                   = cms.string('MEDIUM'),
-            bdisc_min                = cms.double(0.4941), # THIS HAS TO MATCH btagOP !
-            applyBtagSF              = cms.bool(True), #This is implemented by BTagSFUtil.cc
-            DeepCSVfile              = cms.string(relBase+'/src/FWLJMET/LJMet/data/DeepCSV_94XSF_V3_B_F.csv'),
-            DeepCSVSubjetfile        = cms.string(relBase+'/src/FWLJMET/LJMet/data/subjet_DeepCSV_94XSF_V3_B_F.csv'),
-            BTagUncertUp             = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
-            BTagUncertDown           = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
-            MistagUncertUp           = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
-            MistagUncertDown          = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
+            # #Btag
+            # btag_cuts                = cms.bool(False), #not implemented
+            # btagOP                   = cms.string('MEDIUM'),
+            # bdisc_min                = cms.double(0.4941), # THIS HAS TO MATCH btagOP !
+            # applyBtagSF              = cms.bool(True), #This is implemented by BTagSFUtil.cc
+            # DeepCSVfile              = cms.string(relBase+'/src/FWLJMET/LJMet/data/DeepCSV_94XSF_V3_B_F.csv'),
+            # DeepCSVSubjetfile        = cms.string(relBase+'/src/FWLJMET/LJMet/data/subjet_DeepCSV_94XSF_V3_B_F.csv'),
+            # BTagUncertUp             = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
+            # BTagUncertDown           = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
+            # MistagUncertUp           = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
+            # MistagUncertDown          = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
 
             )
 
@@ -409,12 +411,12 @@ process.ljmet = cms.EDAnalyzer(
 
         debug         = cms.bool(False),
         verbosity     = cms.int32(1),
-        selector      = cms.string('MultiLepSelector'),
+        selector      = cms.string('DileptonSelector'),
         include_calcs = cms.vstring(
-                        'DiiLepCalc',
+                        # 'DiLepCalc',
                         'TpTpCalc',
                         'CommonCalc',
-                        'JetSubCalc',
+                        # 'JetSubCalc',
         ),
         exclude_calcs = cms.vstring(
                         'TestCalc',
@@ -425,10 +427,10 @@ process.ljmet = cms.EDAnalyzer(
         DileptonSelector = cms.PSet(DileptonSelector_cfg),
 
         # Calc cfg name has to match the name as registered in Calc.cc
-        DiLepCalc    = cms.PSet(DiLepCalc_cfg),
+        # DiLepCalc    = cms.PSet(DiLepCalc_cfg),
         TpTpCalc     = cms.PSet(TpTpCalc_cfg),
         CommonCalc   = cms.PSet(),
-        JetSubCalc   = cms.PSet(JetSubCalc_cfg),
+        # JetSubCalc   = cms.PSet(JetSubCalc_cfg),
 
 )
 
